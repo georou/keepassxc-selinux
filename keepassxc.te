@@ -52,8 +52,6 @@ fs_associate_tmpfs(keepassxc_tmp_t)
 #
 
 allow keepassxc_t self:process { setrlimit setsched };
-# Replace with logging_send_syslog_msg
-#allow keepassxc_t self:unix_dgram_socket { create_socket_perms };
 allow keepassxc_t self:unix_stream_socket { connectto create_stream_socket_perms };
 allow keepassxc_t self:netlink_kobject_uevent_socket { create_socket_perms };
 
@@ -62,14 +60,6 @@ dontaudit keepassxc_t cert_t:dir search;
 allow keepassxc_t keepassxc_tmp_t:sock_file manage_sock_file_perms;
 dontaudit unconfined_t keepassxc_tmp_t:file read_file_perms;
 dontaudit unconfined_t keepassxc_tmp_t:sock_file read_sock_file_perms;
-#allow keepassxc_t tmp_t:sock_file { create rename setattr unlink write };
-
-# Replace with dbus_session_bus_client
-#allow keepassxc_t unconfined_dbusd_t:unix_stream_socket connectto;
-
-# Replace with dbus_session_bus_client
-#allow keepassxc_t unconfined_dbusd_t:dbus send_msg;
-#allow unconfined_dbusd_t keepassxc_t:dbus send_msg;
 
 allow keepassxc_t unconfined_t:dbus send_msg;
 allow unconfined_t keepassxc_t:dbus send_msg;
@@ -78,9 +68,7 @@ allow keepassxc_t xdm_t:unix_stream_socket { read write };
 
 manage_files_pattern(keepassxc_t, keepassxc_cache_home_t, keepassxc_cache_home_t)
 gnome_cache_filetrans(keepassxc_t, keepassxc_cache_home_t, { dir file })
-#filetrans_pattern(keepassxc_t, cache_home_t, keepassxc_cache_home_t, { dir file })
 
-#allow keepassxc_db_t fs_t:filesystem associate;
 manage_dirs_pattern(unconfined_t, keepassxc_db_t, keepassxc_db_t)
 manage_files_pattern(unconfined_t, keepassxc_db_t, keepassxc_db_t)
 keepassxc_relabel_db_file(unconfined_t)
@@ -95,14 +83,11 @@ files_usr_filetrans(keepassxc_t, keepassxc_etc_t, { dir file })
 manage_dirs_pattern(keepassxc_t, keepassxc_home_t, keepassxc_home_t)
 manage_files_pattern(keepassxc_t, keepassxc_home_t, keepassxc_home_t)
 gnome_config_filetrans(keepassxc_t, keepassxc_home_t, { dir file })
-#filetrans_pattern(keepassxc_t, config_home_t, keepassxc_home_t, { dir file })
 
 manage_dirs_pattern(keepassxc_t, keepassxc_tmp_t, keepassxc_tmp_t)
 manage_files_pattern(keepassxc_t, keepassxc_tmp_t, keepassxc_tmp_t)
 files_tmp_filetrans(keepassxc_t, keepassxc_tmp_t, { file dir })
 
-# Replace with logging_send_syslog_msg
-#kernel_dgram_send(keepassxc_t)
 kernel_getattr_proc_files(keepassxc_t)
 kernel_list_proc(keepassxc_t)
 
@@ -123,8 +108,6 @@ fs_getattr_xattr_fs(keepassxc_t)
 
 init_search_pid_dirs(keepassxc_t)
 
-# Replace with logging_send_syslog_msg
-#logging_stream_connect_syslog(keepassxc_t)
 logging_send_syslog_msg(keepassxc_t)
 
 udev_read_pid_files(keepassxc_t)
