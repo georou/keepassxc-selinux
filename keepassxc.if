@@ -1,0 +1,175 @@
+
+## <summary>policy for keepassxc</summary>
+
+########################################
+## <summary>
+##	Execute keepassxc_exec_t in the keepassxc domain.
+## </summary>
+## <param name="domain">
+## <summary>
+##	Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`keepassxc_domtrans',`
+	gen_require(`
+		type keepassxc_t, keepassxc_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, keepassxc_exec_t, keepassxc_t)
+')
+
+########################################
+## <summary>
+##	Role access for keepassxc
+## </summary>
+## <param name="role">
+##	<summary>
+##	Role allowed access
+##	</summary>
+## </param>
+## <param name="domain">
+##	<summary>
+##	User domain for the role
+##	</summary>
+## </param>
+#
+interface(`keepassxc_role',`
+	gen_require(`
+		type keepassxc_t;
+		attribute_role keepassxc_roles;
+	')
+
+	roleattribute $1 keepassxc_roles;
+
+	keepassxc_domtrans($2)
+
+	ps_process_pattern($2, keepassxc_t)
+	allow $2 keepassxc_t:process signal_perms;
+')
+
+######################################
+## <summary>
+##	Execute keepassxc in the caller domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`keepassxc_exec',`
+	gen_require(`
+		type keepassxc_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	can_exec($1, keepassxc_exec_t)
+')
+
+########################################
+## <summary>
+##	Execute keepassxc in the keepassxc domain, and
+##	allow the specified role the keepassxc domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to transition
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	The role to be allowed the keepassxc domain.
+##	</summary>
+## </param>
+#
+interface(`keepassxc_run',`
+	gen_require(`
+		type keepassxc_t;
+		attribute_role keepassxc_roles;
+	')
+
+	keepassxc_domtrans($1)
+	roleattribute $2 keepassxc_roles;
+')
+
+########################################
+## <summary>
+##	Allow domain to relabel
+##	keepassxc db password file.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`keepassxc_relabel_db_file',`
+	gen_require(`
+		type keepassxc_db_t;
+	')
+	
+	allow $1 keepassxc_db_t:file relabelto;
+')
+
+########################################
+## <summary>
+##	dontaudit attempts to read
+##	keepassxc db password file.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`keepassxc_dontaudit_read_db_file',`
+	gen_require(`
+		type keepassxc_db_t;
+	')
+
+	dontaudit $1 keepassxc_db_t:file read_file_perms;
+')
+
+########################################
+## <summary>
+##	dontaudit attempts to read
+##	keepassxc tmp socket file.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`keepassxc_dontaudit_read_tmp_socket_file',`
+	gen_require(`
+		type keepassxc_tmp_t;
+	')
+
+	dontaudit unconfined_t keepassxc_tmp_t:sock_file read_file_perms;
+')
+
+########################################
+## <summary>
+##      dontaudit attempts to read
+##      keepassxc tmp lock file.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <rolecap/>
+#
+interface(`keepassxc_dontaudit_read_tmp_lock_file',`
+        gen_require(`
+                type keepassxc_tmp_t;
+        ')
+
+        dontaudit unconfined_t keepassxc_tmp_t:file read_file_perms;
+')
