@@ -152,3 +152,8 @@ optional_policy(`
 	xserver_stream_connect_xdm(keepassxc_t)
 	xserver_manage_home_fonts(keepassxc_t)
 ')
+
+optional_policy(`
+	# Intel IBM X61 Integrated graphics support?
+	dev_rw_dri(keepassxc_t)
+')
