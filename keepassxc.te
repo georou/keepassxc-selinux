@@ -73,6 +73,7 @@ manage_dirs_pattern(unconfined_t, keepassxc_db_t, keepassxc_db_t)
 manage_files_pattern(unconfined_t, keepassxc_db_t, keepassxc_db_t)
 keepassxc_relabel_db_file(unconfined_t)
 
+manage_dirs_pattern(keepassxc_t, keepassxc_db_t, keepassxc_db_t)
 manage_files_pattern(keepassxc_t, keepassxc_db_t, keepassxc_db_t)
 userdom_user_home_dir_filetrans(keepassxc_t, keepassxc_db_t, { dir file })
 
