@@ -2,9 +2,11 @@
 
 This policy is designed to work on Fedora 26 with i3wm to confine keepassxc-2.2.2-1. Since it concerns passwords, use at your own risk.
 
-The primary goals of this policy is:
+The primary goals of this policy module is:
 * Deny network access to the program
 * Isolate the password file (.kdbx) from other programs on the system
+
+A key note to know is because private types are used for the password file, it breaks the convention of SELinux that unconfined has access to everything.
 
 The policy works as inteded to achieve the above goals as a GUI application. However, see below
 

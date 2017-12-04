@@ -25,8 +25,6 @@ roleattribute unconfined_r keepassxc_roles;
 
 type keepassxc_t;
 type keepassxc_exec_t;
-# Unconventional transition for unconfined. Will need to figure out a better way
-domain_auto_trans(unconfined_t, keepassxc_exec_t, keepassxc_t);
 userdom_user_application_domain(keepassxc_t, keepassxc_exec_t)
 role keepassxc_roles types keepassxc_t;
 
@@ -157,4 +155,14 @@ optional_policy(`
 optional_policy(`
 	# Intel IBM X61 Integrated graphics support?
 	dev_rw_dri(keepassxc_t)
+')
+
+# Unconventional transition for unconfined. Temporary for testing
+optional_policy(`
+        gen_require(`
+                type unconfined_t;
+                role unconfined_r;
+        ')
+
+        keepassxc_role(unconfined_r, unconfined_t)
 ')
