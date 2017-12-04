@@ -111,6 +111,7 @@ interface(`keepassxc_relabel_db_file',`
 		type keepassxc_db_t;
 	')
 	
+	allow $1 keepassxc_db_t:dir relabelto;
 	allow $1 keepassxc_db_t:file relabelto;
 ')
 
