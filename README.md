@@ -6,7 +6,7 @@ The primary goals of this policy module is:
 * Deny network access to the program
 * Isolate the password file (.kdbx) from other programs on the system
 
-A key note to know is because private types are used for the password file, it breaks the convention of SELinux that unconfined has access to everything.
+A key note to know is because private types are used for the password file, it breaks the convention of SELinux that unconfined has access to everything. Also confining unconfined_t goes against convention. A future branch will have better support for staff_t instead.
 
 The policy works as inteded to achieve the above goals as a GUI application. However, see below
 
