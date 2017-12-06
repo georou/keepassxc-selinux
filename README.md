@@ -6,13 +6,13 @@ The primary goals of this policy module is:
 * Deny network access to the program
 * Isolate the password file (.kdbx) from other programs on the system
 
-A key note to know is because private types are used for the password file, it breaks the convention of SELinux that unconfined has access to everything. Also confining unconfined_t goes against convention. A future branch will have better support for staff_t instead.
+A key note to know is because private types are used for the password file, it breaks the convention of SELinux that unconfined has access to everything. Also confining unconfined_u goes against convention. A future branch will have better support for staff_u instead.
 
 The policy works as inteded to achieve the above goals as a GUI application. However, see below
 
 ### Current caveats:
 
-* Policy is designed with the assumption that the user is using unconfined_u (which is standard on Fedora out-of-the-box)
+* Policy is designed with the assumption that the user is using unconfined_u (which is standard on Fedora out-of-the-box). Staff_u is also supported, remove unconfined from the policy if desired.
 * Moving the .kdbx away from the home directory needs to have `restorecon` run to restore its private label: keepassxc_db_t
 * Using another window manager apart from i3wm will possibly need other permissions and is untested
 * Auto-type under i3wm doesn't work, keepassxc bug see here: https://github.com/keepassxreboot/keepassxc/issues/457

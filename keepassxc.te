@@ -106,6 +106,7 @@ fs_getattr_tmpfs(keepassxc_t)
 fs_getattr_xattr_fs(keepassxc_t)
 
 init_search_pid_dirs(keepassxc_t)
+init_dbus_chat(keepassxc_t)
 
 logging_send_syslog_msg(keepassxc_t)
 
@@ -134,6 +135,10 @@ tunable_policy(`keepassxc_can_access_usb_devices',`
 	fs_manage_dos_files(keepassxc_t)
 	# After plugging in security key for challenge-response feature
 	dev_rw_generic_usb_dev(keepassxc_t)
+')
+
+optional_policy(`
+	systemd_dbus_chat_hostnamed(keepassxc_t)
 ')
 
 optional_policy(`
