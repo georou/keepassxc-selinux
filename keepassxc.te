@@ -32,7 +32,7 @@ type keepassxc_cache_home_t;
 userdom_user_home_content(keepassxc_cache_home_t)
 
 type keepassxc_db_t;
-fs_associate(keepassxc_db_t)
+userdom_user_home_content(keepassxc_db_t)
 
 type keepassxc_etc_t;
 files_config_file(keepassxc_etc_t)
@@ -41,8 +41,7 @@ type keepassxc_home_t;
 userdom_user_home_content(keepassxc_home_t)
 
 type keepassxc_tmp_t;
-fs_associate_tmpfs(keepassxc_tmp_t)
-
+userdom_user_tmp_file(keepassxc_tmp_t)
 
 ########################################
 #
@@ -56,8 +55,6 @@ allow keepassxc_t self:netlink_kobject_uevent_socket { create_socket_perms };
 dontaudit keepassxc_t cert_t:dir search;
 
 allow keepassxc_t keepassxc_tmp_t:sock_file manage_sock_file_perms;
-dontaudit unconfined_t keepassxc_tmp_t:file read_file_perms;
-dontaudit unconfined_t keepassxc_tmp_t:sock_file read_sock_file_perms;
 
 allow keepassxc_t unconfined_t:dbus send_msg;
 allow unconfined_t keepassxc_t:dbus send_msg;
@@ -66,10 +63,6 @@ allow keepassxc_t xdm_t:unix_stream_socket { read write };
 
 manage_files_pattern(keepassxc_t, keepassxc_cache_home_t, keepassxc_cache_home_t)
 gnome_cache_filetrans(keepassxc_t, keepassxc_cache_home_t, { dir file })
-
-manage_dirs_pattern(unconfined_t, keepassxc_db_t, keepassxc_db_t)
-manage_files_pattern(unconfined_t, keepassxc_db_t, keepassxc_db_t)
-keepassxc_relabel_db_file(unconfined_t)
 
 manage_dirs_pattern(keepassxc_t, keepassxc_db_t, keepassxc_db_t)
 manage_files_pattern(keepassxc_t, keepassxc_db_t, keepassxc_db_t)
@@ -106,6 +99,7 @@ fs_getattr_tmpfs(keepassxc_t)
 fs_getattr_xattr_fs(keepassxc_t)
 
 init_search_pid_dirs(keepassxc_t)
+init_dbus_chat(keepassxc_t)
 
 logging_send_syslog_msg(keepassxc_t)
 
@@ -129,6 +123,8 @@ userdom_dontaudit_read_all_user_home_content_files(keepassxc_t)
 # Added dontaudit rule instead since legacy cert options are never going to be used
 #miscfiles_read_generic_certs(keepassxc_t)
 
+auth_read_passwd(keepassxc_t)
+
 tunable_policy(`keepassxc_can_access_usb_devices',`
 	dev_associate_usbfs(keepassxc_db_t)
 	fs_manage_dos_files(keepassxc_t)
@@ -143,6 +139,10 @@ optional_policy(`
 	gnome_manage_home_config(keepassxc_t)
 	gnome_read_generic_data_home_dirs(keepassxc_t)
 	gnome_read_generic_data_home_files(keepassxc_t)
+')
+
+optional_policy(`
+	systemd_dbus_chat_hostnamed(keepassxc_t)
 ')
 
 optional_policy(`
@@ -161,8 +161,11 @@ optional_policy(`
 optional_policy(`
         gen_require(`
                 type unconfined_t;
+		type staff_t;
                 role unconfined_r;
+		role staff_r;
         ')
 
         keepassxc_role(unconfined_r, unconfined_t)
+	keepassxc_role(staff_r, staff_t)
 ')
