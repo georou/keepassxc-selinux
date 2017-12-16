@@ -3,7 +3,7 @@
 This policy is designed to work on Fedora 26 with i3wm to confine keepassxc-2.2.2-1. Since it concerns passwords, use at your own risk.
 
 The primary goals of this policy module is:
-* Deny network access to the program
+* Deny network access to the program. (Within reason. DBUS is allowed and keepassxc could potentially talk through that)
 * Isolate the password file (.kdbx) from other programs on the system (see private-db branch for this feature)
 
 A key note to know is because private types are used for the password file, it breaks the convention of SELinux that unconfined has access to everything. Also confining unconfined_u goes against convention. See private-db branch.
@@ -13,7 +13,7 @@ The policy works as inteded to achieve the above goals as a GUI application. How
 ### Current caveats:
 
 * Policy is designed with the assumption that the user is using unconfined_u (which is standard on Fedora out-of-the-box). Staff_u is also supported, remove unconfined from the policy if desired.
-* Moving the .kdbx away from the home directory needs to have `restorecon` run to restore its private label: keepassxc_db_t
+* Moving the .kdbx away from the home directory needs to have its private label `keepassxc_db_t` added
 * Using another window manager apart from i3wm will possibly need other permissions and is untested
 * Auto-type under i3wm doesn't work, keepassxc bug see here: https://github.com/keepassxreboot/keepassxc/issues/457
 * keepassxc-cli is untested
