@@ -1,28 +1,26 @@
-policy_module(keepassxc, 1.1.0)
+policy_module(keepassxc, 1.3.0)
 
 ########################################
 #
 # Declarations
 #
-#permissive keepassxc_t;
+#
+## <desc>
+## <p>
+## Allow keepassxc to use dbus
+## </p>
+## </desc>
+gen_tunable(keepassxc_can_use_dbus, false)
 
 ## <desc>
 ## <p>
-## Allow keepass to read and write to USB devices
+## Allow keepassxc to read and write to USB devices
 ## </p>
 ## </desc>
-gen_tunable(keepassxc_can_access_usb_devices, false)
-
-## <desc>
-##      <p>
-##      Allow keepassxc to manage user content
-##      </p>
-## </desc>
-gen_tunable(keepassxc_manage_user_content, false)
+gen_tunable(keepassxc_use_usb_devices, false)
 
 gen_require(`
-	type cert_t;
-	type unconfined_t;
+	type unconfined_t, unconfined_dbusd_t;
 	role unconfined_r;
 ')
 
@@ -37,14 +35,11 @@ role keepassxc_roles types keepassxc_t;
 type keepassxc_cache_home_t;
 userdom_user_home_content(keepassxc_cache_home_t)
 
+type keepassxc_config_t;
+userdom_user_home_content(keepassxc_config_t)
+
 type keepassxc_db_t;
 userdom_user_home_content(keepassxc_db_t)
-
-type keepassxc_etc_t;
-files_config_file(keepassxc_etc_t)
-
-type keepassxc_home_t;
-userdom_user_home_content(keepassxc_home_t)
 
 type keepassxc_tmp_t;
 userdom_user_tmp_file(keepassxc_tmp_t)
@@ -57,16 +52,10 @@ userdom_user_tmp_file(keepassxc_tmpfs_t)
 # keepassxc local policy
 #
 
-allow keepassxc_t self:process { setrlimit setsched };
-allow keepassxc_t self:netlink_kobject_uevent_socket { create_socket_perms };
+allow keepassxc_t self:process { execmem setrlimit setsched }; # execmem seems be caused by pthreads from glib2. Creates an annonymous mapping with PROT_WRITE & PROT_EXEC.
+allow keepassxc_t self:netlink_kobject_uevent_socket create_socket_perms;
+allow keepassxc_t self:netlink_route_socket { create_socket_perms nlmsg_read };
 
-dontaudit keepassxc_t cert_t:dir search;
-
-# Unsure if writing should be allowed. Found in F27 Gnome
-allow keepassxc_t iceauth_home_t:file write;
-
-allow keepassxc_t unconfined_t:dbus send_msg;
-allow unconfined_t keepassxc_t:dbus send_msg;
 
 manage_dirs_pattern(keepassxc_t, keepassxc_cache_home_t, keepassxc_cache_home_t)
 manage_files_pattern(keepassxc_t, keepassxc_cache_home_t, keepassxc_cache_home_t)
@@ -75,73 +64,59 @@ gnome_cache_filetrans(keepassxc_t, keepassxc_cache_home_t, { dir file })
 manage_dirs_pattern(keepassxc_t, keepassxc_db_t, keepassxc_db_t)
 manage_files_pattern(keepassxc_t, keepassxc_db_t, keepassxc_db_t)
 userdom_user_home_dir_filetrans(keepassxc_t, keepassxc_db_t, { dir file })
+userdom_user_home_content_filetrans(keepassxc_t, keepassxc_db_t, { dir file })
 
-manage_dirs_pattern(keepassxc_t, keepassxc_etc_t, keepassxc_etc_t)
-manage_files_pattern(keepassxc_t, keepassxc_etc_t, keepassxc_etc_t)
-mmap_files_pattern(keepassxc_t, keepassxc_etc_t, keepassxc_etc_t)
-files_usr_filetrans(keepassxc_t, keepassxc_etc_t, { dir file })
-
-manage_dirs_pattern(keepassxc_t, keepassxc_home_t, keepassxc_home_t)
-manage_files_pattern(keepassxc_t, keepassxc_home_t, keepassxc_home_t)
-mmap_files_pattern(keepassxc_t, keepassxc_home_t, keepassxc_home_t)
-gnome_config_filetrans(keepassxc_t, keepassxc_home_t, { dir file })
+manage_dirs_pattern(keepassxc_t, keepassxc_config_t, keepassxc_config_t)
+manage_files_pattern(keepassxc_t, keepassxc_config_t, keepassxc_config_t)
+mmap_exec_files_pattern(keepassxc_t, keepassxc_config_t, keepassxc_config_t)
+gnome_config_filetrans(keepassxc_t, keepassxc_config_t, { dir file })
 
 manage_dirs_pattern(keepassxc_t, keepassxc_tmp_t, keepassxc_tmp_t)
 manage_files_pattern(keepassxc_t, keepassxc_tmp_t, keepassxc_tmp_t)
+manage_lnk_files_pattern(keepassxc_t, keepassxc_tmp_t, keepassxc_tmp_t)
 manage_sock_files_pattern(keepassxc_t, keepassxc_tmp_t, keepassxc_tmp_t)
-files_tmp_filetrans(keepassxc_t, keepassxc_tmp_t, { dir file sock_file })
+files_tmp_filetrans(keepassxc_t, keepassxc_tmp_t, { dir file lnk_file sock_file })
 
+manage_dirs_pattern(keepassxc_t, keepassxc_tmpfs_t, keepassxc_tmpfs_t)
 manage_files_pattern(keepassxc_t, keepassxc_tmpfs_t, keepassxc_tmpfs_t)
 manage_lnk_files_pattern(keepassxc_t, keepassxc_tmpfs_t, keepassxc_tmpfs_t)
 manage_fifo_files_pattern(keepassxc_t, keepassxc_tmpfs_t, keepassxc_tmpfs_t)
 manage_sock_files_pattern(keepassxc_t, keepassxc_tmpfs_t, keepassxc_tmpfs_t)
-fs_tmpfs_filetrans(keepassxc_t, keepassxc_tmpfs_t, { file lnk_file fifo_file sock_file })
+mmap_exec_files_pattern(keepassxc_t, keepassxc_tmpfs_t, keepassxc_tmpfs_t)
+fs_tmpfs_filetrans(keepassxc_t, keepassxc_tmpfs_t, { dir file lnk_file sock_file })
+userdom_user_tmp_filetrans(keepassxc_t, keepassxc_tmpfs_t, { dir file lnk_file sock_file })
 
-# Requesting cpuinfo
+# Requesting cpuinfo which could be pointless to allow reading all of proc?
 kernel_dontaudit_read_system_state(keepassxc_t)
 
-# Needed to exec ibus-daemon
-corecmd_exec_bin(keepassxc_t)
+auth_read_passwd(keepassxc_t)
 
-dbus_session_bus_client(keepassxc_t)
-dbus_system_bus_client(keepassxc_t)
+# Used to start ibus-daemon
+corecmd_exec_bin(keepassxc_t)
 
 dev_read_sysfs(keepassxc_t)
 dev_read_rand(keepassxc_t)
 dev_read_urand(keepassxc_t)
 
 fs_getattr_xattr_fs(keepassxc_t)
+fs_dontaudit_getattr_all_fs(keepassxc_t)
 
 logging_send_syslog_msg(keepassxc_t)
 
+miscfiles_read_hwdata(keepassxc_t)
+
+unconfined_dbus_chat(keepassxc_t)
+unconfined_signull(keepassxc_t)
 unconfined_stream_connect(keepassxc_t)
 
-userdom_manage_tmp_dirs(keepassxc_t)
-userdom_use_inherited_user_ttys(keepassxc_t)
-
-# Added dontaudit rule instead since legacy cert options are never going to be used
-#miscfiles_read_generic_certs(keepassxc_t)
-
-auth_read_passwd(keepassxc_t)
+userdom_dontaudit_read_user_home_content_files(keepassxc_t)
+userdom_manage_user_home_content_dirs(keepassxc_t)
+userdom_manage_user_home_content_files(keepassxc_t)
+userdom_stream_connect(keepassxc_t)
+userdom_use_user_terminals(keepassxc_t)
 
 # X11 application handling
 xserver_user_x_domain_template(keepassxc, keepassxc_t, keepassxc_tmpfs_t)
-
-
-optional_policy(`
-	dbus_read_lib_files(keepassxc_t)
-	init_dbus_chat(keepassxc_t)
-	systemd_dbus_chat_hostnamed(keepassxc_t)
-')
-
-optional_policy(`
-	dev_rw_xserver_misc(keepassxc_t)
-')
-
-optional_policy(`
-	# IBM X61 Intel integrated graphics support?
-	dev_rw_dri(keepassxc_t)
-')
 
 optional_policy(`
 	gnome_manage_config(keepassxc_t)
@@ -151,22 +126,23 @@ optional_policy(`
 	udev_read_db(keepassxc_t)
 ')
 
-tunable_policy(`keepassxc_can_access_usb_devices',`
-	dev_associate_usbfs(keepassxc_db_t)
-	fs_manage_dos_files(keepassxc_t)
-	# After plugging in security key for challenge-response feature
-	dev_rw_generic_usb_dev(keepassxc_t)
+tunable_policy(`keepassxc_can_use_dbus',`
+	dbus_session_bus_client(keepassxc_t)
+#	dbus_system_bus_client(keepassxc_t)
+	allow keepassxc_t self:udp_socket { create ioctl };
+',`
+	dontaudit keepassxc_t self:udp_socket { create ioctl };
+	dontaudit keepassxc_t unconfined_dbusd_t:unix_stream_socket connectto;
 ')
 
-tunable_policy(`keepassxc_manage_user_content',`
-        userdom_manage_user_home_content_dirs(keepassxc_t)
-        userdom_manage_user_home_content_files(keepassxc_t)
+tunable_policy(`keepassxc_use_usb_devices',`
+	fs_manage_dos_dirs(keepassxc_t)
+	fs_manage_dos_files(keepassxc_t)
+	# After plugging in yubikey key for challenge-response feature
+	#dev_associate_usbfs(keepassxc_db_t)
+	#dev_rw_generic_usb_dev(keepassxc_t)
 ',`
-	files_dontaudit_list_home(keepassxc_t)
-	userdom_dontaudit_exec_user_home_content_files(keepassxc_t)
-        userdom_dontaudit_manage_user_home_content_dirs(keepassxc_t)
-        userdom_dontaudit_read_all_user_home_content_files(keepassxc_t)
-        userdom_dontaudit_write_user_home_content_files(keepassxc_t)
+	fs_list_dos(keepassxc_t)
 ')
 
 # Unconventional transition for unconfined. Remove if desired
@@ -181,3 +157,4 @@ optional_policy(`
         keepassxc_role(unconfined_r, unconfined_t)
 	keepassxc_role(staff_r, staff_t)
 ')
+

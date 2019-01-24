@@ -1,7 +1,5 @@
 HOME_DIR/.*.kdbx		--	gen_context(system_u:object_r:keepassxc_db_t,s0)
-HOME_DIR/\.config/keepassxc(/.*)?	gen_context(system_u:object_r:keepassxc_home_t,s0)
+HOME_DIR/\.config/keepassxc(/.*)?	gen_context(system_u:object_r:keepassxc_config_t,s0)
 
 /usr/bin/keepassxc		--	gen_context(system_u:object_r:keepassxc_exec_t,s0)
 /usr/bin/keepassxc-cli		--	gen_context(system_u:object_r:keepassxc_exec_t,s0)
-
-/usr/share/keepassxc(/.*)?		gen_context(system_u:object_r:keepassxc_etc_t,s0)
